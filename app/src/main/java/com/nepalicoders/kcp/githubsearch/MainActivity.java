@@ -1,6 +1,7 @@
 package com.nepalicoders.kcp.githubsearch;
 
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -32,13 +33,31 @@ public class MainActivity extends AppCompatActivity {
     public void makeGithubSearchQuery(){
         URL url = NetworkUtils.buildUrl(mSearchBoxEditText.getText().toString());
         mUrlDisplayTextView.setText(url.toString());
-        try {
-            String result = NetworkUtils.getResponseFromHttpUrl(url);
-            mSearchResultsTextView.setText(result);
-        } catch (IOException e) {
-            e.printStackTrace();
+        new GithubQueryTask().execute(url);
+    }
+
+    public class GithubQueryTask extends AsyncTask<URL,Void,String>{
+
+        @Override
+        protected String doInBackground(URL... params) {
+            URL stringUrl = params[0];
+            String gitHubSearchResults = null;
+            try {
+                gitHubSearchResults = NetworkUtils.getResponseFromHttpUrl(stringUrl);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return gitHubSearchResults;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            if(s!=null && s!=""){
+                mSearchResultsTextView.setText(s);
+            }
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
