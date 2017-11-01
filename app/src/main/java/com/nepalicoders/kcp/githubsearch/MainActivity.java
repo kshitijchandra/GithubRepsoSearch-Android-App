@@ -2,6 +2,7 @@ package com.nepalicoders.kcp.githubsearch;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,8 +20,8 @@ public class MainActivity extends AppCompatActivity {
     TextView mSearchResultsTextView;
     TextView mErrorMessageTextView;
     ProgressBar mProgressBar;
-
-    // TODO (24) Create a ProgressBar variable to store a reference to the ProgressBar
+    private static final String SEARCH_QUERY_URL_EXTRA = "query";
+    private static final String SEARCH_RESULT_RAW_JSON = "results";
 
 
     @Override
@@ -33,7 +34,14 @@ public class MainActivity extends AppCompatActivity {
         mErrorMessageTextView = (TextView) findViewById(R.id.tv_error_message_display);
         mProgressBar = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
-        // TODO (25) Get a reference to the ProgressBar using findViewById
+        if(savedInstanceState !=null){
+            if(savedInstanceState.containsKey(SEARCH_QUERY_URL_EXTRA)){
+                mUrlDisplayTextView.setText(savedInstanceState.getString(SEARCH_QUERY_URL_EXTRA));
+            }
+            if(savedInstanceState.containsKey(SEARCH_RESULT_RAW_JSON)){
+                mSearchResultsTextView.setText(savedInstanceState.getString(SEARCH_RESULT_RAW_JSON));
+            }
+        }
     }
 
     private void makeGithubSearchQuery() {
@@ -68,9 +76,8 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public class GithubQueryTask extends AsyncTask<URL, Void, String> {
 
-        // TODO (26) Override onPreExecute to set the loading indicator to visible
+    public class GithubQueryTask extends AsyncTask<URL, Void, String> {
 
 
         @Override
@@ -93,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String s) {
-            // TODO (27) As soon as the loading is complete, hide the loading indicator
             mProgressBar.setVisibility(View.INVISIBLE);
             if (s != null && s != "") {
                 showJsonDataView();
@@ -102,5 +108,14 @@ public class MainActivity extends AppCompatActivity {
                 showErrorMessage();
             }
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        String queryUrl = mUrlDisplayTextView.getText().toString();
+        String rawJsonSearchResult = mSearchResultsTextView.getText().toString();
+        outState.putString(SEARCH_QUERY_URL_EXTRA,queryUrl);
+        outState.putString(SEARCH_RESULT_RAW_JSON,rawJsonSearchResult);
     }
 }
